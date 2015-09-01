@@ -1,0 +1,11 @@
+# test file for infinitewp
+---
+- hosts: all
+  remote_user: vagrant
+  sudo: true
+  roles:
+    - ../../
+  vars:
+    infinitewp_install_dir: /tmp/infinitewp
+    infinitewp_owner: www-data
+    infinitewp_group: www-data

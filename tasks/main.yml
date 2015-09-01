@@ -1,0 +1,4 @@
+# tasks file for infinitewp
+---
+- include: download.yml
+- include: install.yml

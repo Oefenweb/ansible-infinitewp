@@ -1,0 +1,6 @@
+# vars file for infinitewp
+---
+infinitewp_dependencies:
+  unzip
+infinitewp_download_path: /var/lib/ansible/infinitewp/downloads
+infinitewp_download_url: "https://infinitewp.com/iwp-admin-panel-download.php"
