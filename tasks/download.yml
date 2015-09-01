@@ -1,0 +1,19 @@
+# tasks file for infinitewp
+---
+- name: create (download) directory
+  file:
+    path: "{{ infinitewp_download_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags: [configuration, infinitewp, infinitewp-download, infinitewp-download-directory]
+
+- name: download
+  get_url:
+    url: "{{ infinitewp_download_url }}"
+    dest: "{{ infinitewp_download_path }}/{{ infinitewp_download_url | basename }}"
+    owner: root
+    group: root
+    mode: 0644
+  tags: [configuration, infinitewp, infinitewp-download, infinitewp-download-get-url]

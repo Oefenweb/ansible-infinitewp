@@ -1,0 +1,80 @@
+# tasks file for infinitewp
+---
+- name: install dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items: infinitewp_dependencies
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-dependencies]
+
+- name: find directory in archive
+  shell: "unzip -qql {{ infinitewp_download_url | basename }} | head -n1 | tr -s ' ' | cut -d' ' -f5"
+  args:
+    chdir: "{{ infinitewp_download_path }}"
+  register: archive_directory
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-find-directory]
+
+- name: unarchive
+  unarchive:
+    src: "{{ infinitewp_download_path }}/{{ infinitewp_download_url | basename }}"
+    dest: "{{ infinitewp_download_path }}"
+    creates: "{{ infinitewp_download_path }}/{{ archive_directory }}"
+    copy: false
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-unarchive]
+
+- name: create (install) directory
+  file:
+    path: "{{ infinitewp_install_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-directory]
+
+- name: install
+  unarchive:
+    src: "{{ infinitewp_download_path }}/{{ infinitewp_download_url | basename }}"
+    dest: "{{ infinitewp_install_dir }}"
+    creates: "{{ infinitewp_install_dir }}/config.php"
+    copy: false
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-unarchive]
+
+- name: update file
+  template:
+    src: config.php.j2
+    dest: "{{ infinitewp_install_dir }}/config.php"
+    owner: root
+    group: root
+    mode: 0440
+  tags: [configuration, sudoers, infinitewp-configuration]
+
+- name: set file permissions
+  shell: "find . -type f ! -perm 0644 -print0 | xargs --no-run-if-empty -0 chmod -c 0644"
+  args:
+    chdir: "{{ infinitewp_install_dir }}"
+  register: file_permissions
+  changed_when: "file_permissions.stdout_lines | length > 0"
+  with_items: infinitewp_install_dir
+  when: item.state is undefined or item.state == 'present'
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-file-permissions]
+
+- name: set dir permissions
+  shell: "find . -type d ! -perm 0755 -print0 | xargs --no-run-if-empty -0 chmod -c 0755"
+  args:
+    chdir: "{{ infinitewp_install_dir }}"
+  register: dir_permissions
+  changed_when: "dir_permissions.stdout_lines | length > 0"
+  with_items: infinitewp_install_dir
+  when: item.state is undefined or item.state == 'present'
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-dir-permissions]
+
+- name: set file owner and group
+  file:
+    path: "{{ infinitewp_install_dir }}/{{ item.1 }}"
+    owner: "{{ item.0.owner }}"
+    group: "{{ item.0.group | default(item.0.owner) }}"
+  with_nested:
+    - infinitewp_install_dir
+    - infinitewp_writable_paths
+  when: item.0.state is undefined or item.0.state == 'present'
+  tags: [configuration, infinitewp, infinitewp-install, infinitewp-install-owner-froup]

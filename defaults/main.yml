@@ -1,0 +1,4 @@
+# defaults file for infinitewp
+---
+infinitewp_install_dir: /var/www
+infinitewp_install_owner: www-data
